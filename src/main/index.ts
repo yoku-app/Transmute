@@ -27,12 +27,12 @@ interface ImageTransformRequest {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get("/api/health", (req, res) => {
+app.get("/api/image/health", (req, res) => {
     res.json({ message: "Image Processing Service is running" });
 });
 
 app.post(
-    "/api/transform",
+    "/api/image/transform",
     upload.single("image"),
     async (
         req: RequestBody<ImageTransformRequest>,
@@ -49,6 +49,12 @@ app.post(
 
         // Retrieve Image Transformations
         const { dimensions, crop, format } = req.body;
+
+        if (!format && !dimensions && !crop) {
+            throw new BadRequestError(
+                "At least one transformation parameter is required"
+            );
+        }
 
         // Creates a mutable reference of the Sharp object that can be used to chain operations together
         let image: Sharp = await convertImageToSharp(file);
