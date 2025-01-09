@@ -1,4 +1,5 @@
 import bodyParser from "body-parser";
+import cors from "cors";
 import express, { Response } from "express";
 import "express-async-errors";
 import { Sharp } from "sharp";
@@ -17,15 +18,17 @@ import {
 import { parseParamAndCallback } from "./util/util";
 
 const app = express();
+const { origin, host, port } = config;
 
 interface ImageTransformRequest {
-    dimensions?: string;
+    resize?: string;
     crop?: string;
     format?: ImageType;
 }
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors({ origin: origin }));
 
 app.get("/api/image/health", (req, res) => {
     res.json({ message: "Image Processing Service is running" });
@@ -48,9 +51,9 @@ app.post(
         }
 
         // Retrieve Image Transformations
-        const { dimensions, crop, format } = req.body;
+        const { resize, crop, format } = req.body;
 
-        if (!format && !dimensions && !crop) {
+        if (!format && !resize && !crop) {
             throw new BadRequestError(
                 "At least one transformation parameter is required"
             );
@@ -59,16 +62,6 @@ app.post(
         // Creates a mutable reference of the Sharp object that can be used to chain operations together
         let image: Sharp = await convertImageToSharp(file);
 
-        // Resize Image
-        if (dimensions) {
-            image = await parseParamAndCallback<ImageDimensions>(
-                dimensions,
-                image,
-                "Invalid dimensions parameter",
-                resizeImage
-            );
-        }
-
         // Crop Image
         if (crop) {
             image = await parseParamAndCallback<ImageCrop>(
@@ -76,6 +69,16 @@ app.post(
                 image,
                 "Invalid crop parameter",
                 cropImage
+            );
+        }
+
+        // Resize Image
+        if (resize) {
+            image = await parseParamAndCallback<ImageDimensions>(
+                resize,
+                image,
+                "Invalid resize parameter",
+                resizeImage
             );
         }
 
@@ -93,6 +96,6 @@ app.post(
 );
 
 app.use(errorHandler);
-app.listen(config.port, () => {
-    console.log(`Server running on ${config.host}`);
+app.listen(port, () => {
+    console.log(`Server running on ${host}`);
 });
