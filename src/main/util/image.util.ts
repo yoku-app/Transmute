@@ -60,7 +60,10 @@ export const cropImage = async (image: Sharp, dimensions: ImageCrop) => {
         );
     }
 
-    if (dimensions.width > width || dimensions.height > height) {
+    if (
+        dimensions.width + dimensions.left > width ||
+        dimensions.height + dimensions.top > height
+    ) {
         throw new BadRequestError(
             "Cropping dimensions exceed the current image dimensions"
         );

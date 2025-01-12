@@ -10,4 +10,12 @@ export interface ImageCrop extends Dimension<number> {
     top: number;
 }
 
-export type ImageType = "jpeg" | "png" | "gif" | "jpg" | "webp";
+export const acceptedImageTypes = [
+    "jpeg",
+    "png",
+    "gif",
+    "jpg",
+    "webp",
+] as const;
+
+export type ImageType = (typeof acceptedImageTypes)[number];

@@ -7,7 +7,12 @@ import { config } from "./config";
 import { errorHandler } from "./error";
 import { upload } from "./file";
 import { BadRequestError } from "./types/error.interface";
-import { ImageCrop, ImageDimensions, ImageType } from "./types/image.interface";
+import {
+    acceptedImageTypes,
+    ImageCrop,
+    ImageDimensions,
+    ImageType,
+} from "./types/image.interface";
 import { RequestBody } from "./types/interface";
 import {
     alterImageType,
@@ -83,6 +88,10 @@ app.post(
         }
 
         if (format) {
+            if (!acceptedImageTypes.includes(format)) {
+                throw new BadRequestError("Invalid image format provided");
+            }
+
             image = await alterImageType(image, format);
         }
 
