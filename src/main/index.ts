@@ -88,11 +88,13 @@ app.post(
         }
 
         if (format) {
-            if (!acceptedImageTypes.includes(format)) {
-                throw new BadRequestError("Invalid image format provided");
-            }
-
-            image = await alterImageType(image, format);
+            image = await parseParamAndCallback<ImageType>(
+                format,
+                image,
+                "Invalid format parameter",
+                alterImageType,
+                (format: ImageType) => acceptedImageTypes.includes(format)
+            );
         }
 
         // Convert Image to Buffer
